@@ -1,0 +1,2 @@
+rm html/*.* html/*/*.*  
+pause
