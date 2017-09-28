@@ -13,7 +13,7 @@ void nvicSetSystemHandlerPriority(uint32_t handler, uint32_t prio) {
 static int sysTickEnabled = 0;
 
 extern volatile uint32_t systick_millis_count;
-void systick_isr() {
+static void systick() {
   systick_millis_count++;
   if (sysTickEnabled) {
     CH_IRQ_PROLOGUE();
@@ -27,6 +27,7 @@ void systick_isr() {
 }
 void st_lld_init(void) {
   nvicSetSystemHandlerPriority(HANDLER_SYSTICK, WHG_ST_IRQ_PRIORITY);
+  _VectorsRam[15] = systick;
   sysTickEnabled = 1;  
 }
 #endif  // #if defined(__arm__) && defined(CORE_TEENSY);
