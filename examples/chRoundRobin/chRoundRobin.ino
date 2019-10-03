@@ -12,17 +12,17 @@
 #include "ChRt.h"
 //------------------------------------------------------------------------------
 // 32 byte stack beyond task switch and interrupt needs.
-static THD_WORKING_AREA(waBlink, 32);
+static THD_WORKING_AREA(waBlink, 64);
 
 static THD_FUNCTION(blink, arg) {
   // blink twice per second
-  pinMode(13, OUTPUT);
+  pinMode(LED_BUILTIN, OUTPUT);
   uint32_t next = millis();
   while (true) {
-    digitalWrite(13, HIGH);
+    digitalWrite(LED_BUILTIN, HIGH);
     next += 100;
     while ((int32_t)(millis() - next) < 0) {}
-    digitalWrite(13, LOW);
+    digitalWrite(LED_BUILTIN, LOW);
     next += 400;
     while ((int32_t)(millis() - next) < 0) {}
   }
@@ -33,9 +33,8 @@ void chStartup() {
     Serial.println("CH_CFG_TIME_QUANTUM must be nonzero for round-robin.");
     while (true) {}
   }
-  
   // Start blink thread.
-  chThdCreateStatic(waBlink, sizeof(waBlink), NORMALPRIO , blink, NULL); 
+  chThdCreateStatic(waBlink, sizeof(waBlink), NORMALPRIO, blink, NULL); 
 }
 //------------------------------------------------------------------------------
 void setup() {

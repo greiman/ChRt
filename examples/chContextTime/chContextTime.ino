@@ -3,6 +3,7 @@
 // and second pulse started in thread 2 and ended in thread 1.
 // Difference should be about 15-16 usec on a 16 MHz 328 Arduino.
 // Under a microsecond on a Teensy 3.6.
+// About 200 ns on Teensy 4.0
 #include "ChRt.h"
 
 // LED_BUILTIN pin on Arduino is usually pin 13.

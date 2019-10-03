@@ -35,9 +35,9 @@ void notify(const char* name, int state) {
 static THD_FUNCTION(thdFcn, arg) {
   while (true) {
     notify((const char*)arg, 0);
-    chThdSleep(1000);
+    chThdSleepMilliseconds(1000);
     notify((const char*)arg, 1);
-    chThdSleep(1000);
+    chThdSleepMilliseconds(1000);
   }
 }
 //------------------------------------------------------------------------------

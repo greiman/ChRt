@@ -1,5 +1,5 @@
 /*
-    ChibiOS - Copyright (C) 2006..2016 Giovanni Di Sirio.
+    ChibiOS - Copyright (C) 2006..2018 Giovanni Di Sirio.
 
     This file is part of ChibiOS.
 
@@ -32,13 +32,13 @@
 #if !defined(TRUE) || defined(__DOXYGEN__)
 #define TRUE    1
 #endif
-#ifdef __arm__
+#ifdef __arm__  //WHG
 #define _FROM_ASM_
-#include "cmparams.h"
+#include "cmparams.h"  // WHG
 #if (CORTEX_MODEL == 0) || (CORTEX_MODEL == 1) // WHG
-#include "../rt/chlicense.h"
-#include "chconf_arm.h"
-#include "chcore_arm.h"
+#include "chlicense.h"
+#include "chconf.h"
+#include "chcore.h"
 
 #if !defined(__DOXYGEN__)
 
@@ -157,6 +157,6 @@ _port_exit_from_isr:
 #endif
 
 #endif /* !defined(__DOXYGEN__) */
-#endif  // (CORTEX_MODEL == 0) || (CORTEX_MODEL == 1)
-#endif  // __arm__
+#endif  // (CORTEX_MODEL == 0) || (CORTEX_MODEL == 1) WHG
+#endif  // __arm__ WHG
 /** @} */

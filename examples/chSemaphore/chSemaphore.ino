@@ -22,7 +22,7 @@ static THD_FUNCTION(thdFcn, name) {
     // Only two threads can be in this region at a time.
     Serial.println((char*)name);
 
-    chThdSleep(1000);
+    chThdSleepMilliseconds(1000);
 
     // Exit region.
     chSemSignal(&semSlots);

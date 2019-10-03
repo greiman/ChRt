@@ -1,5 +1,5 @@
 /*
-    ChibiOS - Copyright (C) 2006..2016 Giovanni Di Sirio.
+    ChibiOS - Copyright (C) 2006..2018 Giovanni Di Sirio.
 
     This file is part of ChibiOS.
 
@@ -49,7 +49,7 @@
 
 /**
  * @brief   Stack alignment constant.
- * @note    It is the alignement required for the stack pointer.
+ * @note    It is the alignment required for the stack pointer.
  */
 #define PORT_STACK_ALIGN                sizeof (stkalign_t)
 
@@ -124,6 +124,14 @@
 
 #if CH_CUSTOMER_LIC_PORT_CM0 == FALSE
 #error "ChibiOS Cortex-M0 port not licensed"
+#endif
+
+/* Handling a GCC problem impacting ARMv6-M.*/
+#if defined(__GNUC__) && !defined(PORT_IGNORE_GCC_VERSION_CHECK)
+#if __GNUC__ > 5
+#warning "This compiler has a know problem with Cortex-M0, see bugs: 88167, 88656."
+#warning "*** Use GCC version 5 or below ***"
+#endif
 #endif
 
 /**
@@ -269,14 +277,22 @@ struct port_intctx {
  * @note    @p id can be a function name or a vector number depending on the
  *          port implementation.
  */
+#ifdef __cplusplus
+#define PORT_IRQ_HANDLER(id) extern "C" void id(void)
+#else
 #define PORT_IRQ_HANDLER(id) void id(void)
+#endif
 
 /**
  * @brief   Fast IRQ handler function declaration.
  * @note    @p id can be a function name or a vector number depending on the
  *          port implementation.
  */
+#ifdef __cplusplus
+#define PORT_FAST_IRQ_HANDLER(id) extern "C" void id(void)
+#else
 #define PORT_FAST_IRQ_HANDLER(id) void id(void)
+#endif
 
 /**
  * @brief   Performs a context switch between two threads.

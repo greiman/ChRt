@@ -3,13 +3,17 @@
 
 //------------------------------------------------------------------------------
 /** calibration factor for delayMS */
+#if defined(__IMXRT1062__)
+#define CAL_FACTOR (F_CPU/3500)
+#else  // defined(__IMXRT1062__)
 #define CAL_FACTOR (F_CPU/7000)
+#endif  // defined(__IMXRT1062__)
 /** delay between led error flashes
  * \param[in] millis milliseconds to delay
  */
 static void delayMS(uint32_t millis) {
   uint32_t i;
-  uint32_t iterations = millis * CAL_FACTOR;
+  uint32_t iterations = millis*CAL_FACTOR;
   for(i = 0; i < iterations; ++i) {
     asm volatile("nop\n\t");
   }
@@ -47,3 +51,9 @@ void usage_fault_isr() {errorBlink(3);}
 
 /** Usage fault - blink three short flashes every two seconds */
 void UsageFault_Handler() {errorBlink(3);}
+
+/** Memory management fault - blink four short flashes every two seconds */
+void memmanage_fault_isr() {errorBlink(4);}
+
+/** Memory management fault - blink four short flashes every two seconds */
+void MemManage_Handler() {errorBlink(4);}

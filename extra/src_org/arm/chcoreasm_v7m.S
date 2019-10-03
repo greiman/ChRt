@@ -1,5 +1,5 @@
 /*
-    ChibiOS - Copyright (C) 2006..2016 Giovanni Di Sirio.
+    ChibiOS - Copyright (C) 2006..2018 Giovanni Di Sirio.
 
     This file is part of ChibiOS.
 
@@ -103,6 +103,9 @@ _port_switch:
                 .thumb_func
                 .globl  _port_thread_start
 _port_thread_start:
+#if CH_DBG_ENABLE_STACK_CHECK && PORT_ENABLE_GUARD_PAGES
+                bl      _port_set_region
+#endif
 #if CH_DBG_SYSTEM_STATE_CHECK
                 bl      _dbg_check_unlock
 #endif

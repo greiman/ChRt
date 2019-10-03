@@ -16,24 +16,24 @@ static msg_t filled_buffers_queue[NUM_BUFFERS];
 // Filled queue mailbox structure.
 MAILBOX_DECL(filled_buffers, &filled_buffers_queue, NUM_BUFFERS);
 //------------------------------------------------------------------------------
-// Declare a stack with 200 bytes beyond context switch and interrupt needs.
-THD_WORKING_AREA(waThread1, 200);
+// Declare a stack with 300 bytes beyond context switch and interrupt needs.
+THD_WORKING_AREA(waThread1, 300);
 
 // Declare the thread function for thread 1.
 THD_FUNCTION(Thread1, arg) {
   (void)arg;
   int n = 0;
   while (true) {
-    void *pbuf; 
+    void *pbuf = nullptr; 
     
     // Waiting for a free buffer.
-    msg_t msg = chMBFetch(&free_buffers, (msg_t *)&pbuf, TIME_INFINITE);
+    msg_t msg = chMBFetchTimeout(&free_buffers, (msg_t *)&pbuf, TIME_INFINITE);
     if (msg != MSG_OK) {
       Serial.println("fetch free failed");
       chThdSleep(TIME_INFINITE);
     }      
     sprintf((char*)pbuf, "message %d", n++);
-    (void)chMBPost(&filled_buffers, (msg_t)pbuf, TIME_INFINITE);
+    (void)chMBPostTimeout(&filled_buffers, (msg_t)pbuf, TIME_INFINITE);
     chThdSleepMilliseconds(1000);    
   }
 }
@@ -45,16 +45,16 @@ THD_WORKING_AREA(waThread2, 200);
 THD_FUNCTION(Thread2, arg) {
   (void)arg;
   while (true) {
-    void *pbuf;
+    void *pbuf = nullptr;
     // Waiting for a filled buffer.
-    msg_t msg = chMBFetch(&filled_buffers, (msg_t *)&pbuf, TIME_INFINITE);
+    msg_t msg = chMBFetchTimeout(&filled_buffers, (msg_t *)&pbuf, TIME_INFINITE);
     if (msg != MSG_OK) {
       Serial.println("fetch filled failed");
       chThdSleep(TIME_INFINITE);
     }  
     Serial.println((char*)pbuf);    
     
-    (void)chMBPost(&free_buffers, (msg_t)pbuf, TIME_INFINITE);
+    (void)chMBPostTimeout(&free_buffers, (msg_t)pbuf, TIME_INFINITE);
   }  
 }
 //------------------------------------------------------------------------------
@@ -63,7 +63,7 @@ void chSetup() {
   
   //Put all buffers in free queue.
   for (int i = 0; i < NUM_BUFFERS; i++) {
-   (void)chMBPost(&free_buffers, (msg_t)&buffers[i], TIME_INFINITE);
+   (void)chMBPostTimeout(&free_buffers, (msg_t)&buffers[i], TIME_INFINITE);
   }  
   
   chThdCreateStatic(waThread1, sizeof(waThread1),

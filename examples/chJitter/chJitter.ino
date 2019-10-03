@@ -15,6 +15,7 @@ volatile  uint16_t tmin = 0XFFFF;
 static THD_WORKING_AREA(waThread1, 64);
 
 static THD_FUNCTION(Thread1, arg) {
+  (void)arg;
   // Initialize tlast.
   chThdSleep(1);
   uint32_t tlast = micros();
@@ -53,7 +54,7 @@ void setup() {
 }
 //------------------------------------------------------------------------------
 void loop() {
-  int np = 0;
+  int np = 10;
 
   while (true) {
     chThdSleepMilliseconds(1000);

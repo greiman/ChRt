@@ -4,7 +4,8 @@
  * \file
  * \brief main ChRt include file.
  */
-#include "rt/ch.h"
+#include "rt/include/ch.h"
+#include "hal_st.h"
 
 /** Size of handler stack. */
 #define HANDLER_STACK_SIZE 400
@@ -48,8 +49,6 @@ extern "C" {
    * \param[in] n number of short pulses
    */
   void errorBlink(int n);
-  /** Low level ST driver initialization. */
-  void st_lld_init(void);
 #ifdef __cplusplus
 }
 #endif

@@ -68,8 +68,8 @@ static THD_FUNCTION(Thread2, arg) {
   // Print count every second.
   systime_t wakeTime = chVTGetSystemTime();
   while (true) {
-    // Sleep for one second.
-    wakeTime += MS2ST(1000);
+    // Sleep until next second.
+    wakeTime += TIME_MS2I(1000);
     chThdSleepUntil(wakeTime);
 
     // Lock access to data.

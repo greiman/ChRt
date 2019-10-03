@@ -1,5 +1,5 @@
 /*
-    ChibiOS - Copyright (C) 2006..2016 Giovanni Di Sirio.
+    ChibiOS - Copyright (C) 2006..2018 Giovanni Di Sirio.
 
     This file is part of ChibiOS.
 
@@ -49,7 +49,7 @@
 
 /**
  * @brief   Stack alignment constant.
- * @note    It is the alignement required for the stack pointer.
+ * @note    It is the alignment required for the stack pointer.
  */
 #define PORT_STACK_ALIGN                sizeof (stkalign_t)
 
@@ -79,6 +79,13 @@
  */
 #if !defined(PORT_ENABLE_GUARD_PAGES) || defined(__DOXYGEN__)
 #define PORT_ENABLE_GUARD_PAGES         FALSE
+#endif
+
+/**
+ * @brief   MPU region to be used to stack guards.
+ */
+#if !defined(PORT_USE_MPU_REGION) || defined(__DOXYGEN__)
+#define PORT_USE_MPU_REGION             MPU_REGION_7
 #endif
 
 /**
@@ -435,14 +442,22 @@ struct port_intctx {
  * @note    @p id can be a function name or a vector number depending on the
  *          port implementation.
  */
+#ifdef __cplusplus
+#define PORT_IRQ_HANDLER(id) extern "C" void id(void)
+#else
 #define PORT_IRQ_HANDLER(id) void id(void)
+#endif
 
 /**
  * @brief   Fast IRQ handler function declaration.
  * @note    @p id can be a function name or a vector number depending on the
  *          port implementation.
  */
+#ifdef __cplusplus
+#define PORT_FAST_IRQ_HANDLER(id) extern "C" void id(void)
+#else
 #define PORT_FAST_IRQ_HANDLER(id) void id(void)
+#endif
 
 /**
  * @brief   Performs a context switch between two threads.
@@ -470,12 +485,8 @@ struct port_intctx {
   _port_switch(ntp, otp);                                                   \
                                                                             \
   /* Setting up the guard page for the switched-in thread.*/                \
-  mpuConfigureRegion(MPU_REGION_0,                                          \
-                     chThdGetSelfX()->wabase,                               \
-                     MPU_RASR_ATTR_AP_NA_NA |                               \
-                     MPU_RASR_ATTR_NON_CACHEABLE |                          \
-                     MPU_RASR_SIZE_32 |                                     \
-                     MPU_RASR_ENABLE);                                      \
+    mpuSetRegionAddress(PORT_USE_MPU_REGION,                                \
+                        chThdGetSelfX()->wabase);                           \
 }
 #endif
 #endif
@@ -527,7 +538,7 @@ static inline void port_init(void) {
 
     /* Setting up the guard page on the main() function stack base
        initially.*/
-    mpuConfigureRegion(MPU_REGION_0,
+    mpuConfigureRegion(PORT_USE_MPU_REGION,
                        &__main_thread_stack_base__,
                        MPU_RASR_ATTR_AP_NA_NA |
                        MPU_RASR_ATTR_NON_CACHEABLE |

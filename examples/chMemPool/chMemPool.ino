@@ -13,7 +13,7 @@ struct PoolObject_t {
 PoolObject_t PoolObject[MB_COUNT];
 
 // Memory pool structure.
-MEMORYPOOL_DECL(memPool, sizeof(PoolObject_t), NULL);
+MEMORYPOOL_DECL(memPool, sizeof(PoolObject_t),PORT_NATURAL_ALIGN, NULL);
 //------------------------------------------------------------------------------
 // Slots for mailbox messages.  Will hold pointers to pool objects.
 msg_t letter[MB_COUNT];
@@ -27,7 +27,7 @@ static THD_WORKING_AREA(waTh2, 200);
 // Data structures and stack for thread 3.
 static THD_WORKING_AREA(waTh3, 200);
 //------------------------------------------------------------------------------
-// Send message every 1000 ticks.
+// Send message every 1000 ms.
 static THD_FUNCTION(thdFcn, name) {
   int msg = 0;
 
@@ -44,12 +44,12 @@ static THD_FUNCTION(thdFcn, name) {
     p->msg = msg++;
 
     // Send message.
-    msg_t s = chMBPost(&mail, (msg_t)p, TIME_IMMEDIATE);
+    msg_t s = chMBPostTimeout(&mail, (msg_t)p, TIME_IMMEDIATE);
     if (s != MSG_OK) {
       Serial.println("chMBPost failed");
       while (true);  
     }
-    chThdSleep(1000);    
+    chThdSleepMilliseconds(1000);    
   }
 }
 //------------------------------------------------------------------------------
@@ -79,7 +79,7 @@ void loop() {
     PoolObject_t *p = 0;;
 
     // Get mail.
-    chMBFetch(&mail, (msg_t*)&p, TIME_INFINITE);
+    chMBFetchTimeout(&mail, (msg_t*)&p, TIME_INFINITE);
 
     Serial.print(p->name);
     Serial.write(' ');

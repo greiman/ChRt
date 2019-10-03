@@ -1,5 +1,5 @@
 /*
-    ChibiOS - Copyright (C) 2006..2016 Giovanni Di Sirio.
+    ChibiOS - Copyright (C) 2006..2018 Giovanni Di Sirio.
 
     This file is part of ChibiOS.
 
@@ -24,11 +24,9 @@
  * @addtogroup ARMCMx_V7M_CORE
  * @{
  */
-
-#ifdef __arm__
-#include "../rt/ch.h"  // WHG
-#if (CORTEX_MODEL == 3) || (CORTEX_MODEL == 4) || (CORTEX_MODEL == 7)
-
+#ifdef __arm__  // WHG
+#include "ch.h"
+#if (CORTEX_MODEL == 3) || (CORTEX_MODEL == 4) || (CORTEX_MODEL == 7) // WHG
 /*===========================================================================*/
 /* Module local definitions.                                                 */
 /*===========================================================================*/
@@ -118,6 +116,19 @@ void PendSV_Handler(void) {
 /* Module exported functions.                                                */
 /*===========================================================================*/
 
+#if ((CH_DBG_ENABLE_STACK_CHECK == TRUE) &&                                 \
+     (PORT_ENABLE_GUARD_PAGES == TRUE)) ||                                  \
+    defined(__DOXYGEN__)
+/**
+ * @brief   Setting up MPU region for the current thread.
+ */
+void _port_set_region(void) {
+
+  mpuSetRegionAddress(PORT_USE_MPU_REGION,
+                      chThdGetSelfX()->wabase);
+}
+#endif
+
 /**
  * @brief   Exception exit redirection to _port_switch_from_isr().
  */
@@ -166,6 +177,6 @@ void _port_irq_epilogue(void) {
   }
   port_unlock_from_isr();
 }
-#endif  // (CORTEX_MODEL == 3) || (CORTEX_MODEL == 4) || (CORTEX_MODEL == 7)
-#endif  //__arm__
+#endif  // (CORTEX_MODEL == 3) || (CORTEX_MODEL == 4) || (CORTEX_MODEL == 7) WHG
+#endif  // __arm__  WHG
 /** @} */

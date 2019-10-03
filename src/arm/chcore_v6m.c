@@ -1,5 +1,5 @@
 /*
-    ChibiOS - Copyright (C) 2006..2016 Giovanni Di Sirio.
+    ChibiOS - Copyright (C) 2006..2018 Giovanni Di Sirio.
 
     This file is part of ChibiOS.
 
@@ -24,11 +24,9 @@
  * @addtogroup ARMCMx_V6M_CORE
  * @{
  */
-
-#ifdef __arm__
-#include "../rt/ch.h"  // WHG
-#if (CORTEX_MODEL == 0) || (CORTEX_MODEL == 1)
-
+#ifdef __arm__  // WHG
+#include "ch.h"
+#if (CORTEX_MODEL == 0) || (CORTEX_MODEL == 1)  // WHG
 /*===========================================================================*/
 /* Module local definitions.                                                 */
 /*===========================================================================*/
@@ -145,7 +143,6 @@ void _port_irq_epilogue(regarm_t lr) {
        order to keep the rest of the context switch atomic.*/
   }
 }
-#endif  // (CORTEX_MODEL == 0) || (CORTEX_MODEL == 0)
-#endif  // __arm__
-
+#endif  // (CORTEX_MODEL == 0) || (CORTEX_MODEL == 1) WHG
+#endif  // __arm__  WHG
 /** @} */

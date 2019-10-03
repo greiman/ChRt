@@ -1,0 +1,95 @@
+Only in ..\src: ChRt.c
+Only in ..\src: ChRt.cpp
+Only in ..\src: ChRt.h
+Only in src_org/arm: chconf.h
+diff -rb src_org/arm/chcore_v6m.c "..\\src/arm/chcore_v6m.c"
+27c27
+< 
+---
+> #ifdef __arm__  // WHG
+29c29
+< 
+---
+> #if (CORTEX_MODEL == 0) || (CORTEX_MODEL == 1)  // WHG
+146c146,147
+< 
+---
+> #endif  // (CORTEX_MODEL == 0) || (CORTEX_MODEL == 1) WHG
+> #endif  // __arm__  WHG
+diff -rb src_org/arm/chcore_v7m.c "..\\src/arm/chcore_v7m.c"
+27c27
+< 
+---
+> #ifdef __arm__  // WHG
+29c29
+< 
+---
+> #if (CORTEX_MODEL == 3) || (CORTEX_MODEL == 4) || (CORTEX_MODEL == 7) // WHG
+180c180,181
+< 
+---
+> #endif  // (CORTEX_MODEL == 3) || (CORTEX_MODEL == 4) || (CORTEX_MODEL == 7) WHG
+> #endif  // __arm__  WHG
+diff -rb src_org/arm/chcoreasm_v6m.S "..\\src/arm/chcoreasm_v6m.S"
+35c35
+< 
+---
+> #ifdef __arm__  //WHG
+36a37,38
+> #include "cmparams.h"  // WHG
+> #if (CORTEX_MODEL == 0) || (CORTEX_MODEL == 1) // WHG
+158c160,161
+< 
+---
+> #endif  // (CORTEX_MODEL == 0) || (CORTEX_MODEL == 1) WHG
+> #endif  // __arm__ WHG
+diff -rb src_org/arm/chcoreasm_v7m.S "..\\src/arm/chcoreasm_v7m.S"
+35c35
+< 
+---
+> #ifdef __arm__  // WHG
+36a37,41
+> #include "cmparams.h"  // WHG
+> #if (CORTEX_MODEL == 0) // WHG
+> /* prevent Conflicting CPU architectures error WHG */
+>   .cpu    cortex-m0 // WHG
+> #elif (CORTEX_MODEL == 3) || (CORTEX_MODEL == 4) || (CORTEX_MODEL == 7) // WHG
+167c172,173
+< 
+---
+> #endif  // (CORTEX_MODEL == 3) || (CORTEX_MODEL == 4) || (CORTEX_MODEL == 7) WHG
+> #endif  // __arm__ WHG
+diff -rb src_org/arm/chtypes.h "..\\src/arm/chtypes.h"
+32a33
+> #include "Arduino.h"  // WHG
+33a35
+> 
+Only in ..\src/arm: cmparams.h
+Only in src_org/avr: chconf.h
+Only in ..\src/avr: chconf_avr.h
+diff -rb src_org/avr/chcore.c "..\\src/avr/chcore.c"
+27c27
+< 
+---
+> #ifdef __AVR__  // WHG
+163c163
+< 
+---
+> #endif  // _AVR_ WHG
+Only in ..\src/avr: st_lld_avr.c
+Only in ..\src: ch.h
+Only in ..\src: chconf.h
+Only in ..\src: chcore.h
+Only in ..\src: chlib.h
+Only in ..\src: chlicense.h
+Only in ..\src: chtypes.h
+Only in ..\src/hal: hal.h
+Only in ..\src: hal_st.h
+Only in ..\src: hal_st_lld.h
+diff -rb src_org/rt/src/chthreads.c "..\\src/rt/src/chthreads.c"
+476a477
+> void chThdExit(msg_t msg) __attribute__((used));  // WHG  
+Only in ..\src: sam3x
+Only in ..\src: samd
+Only in ..\src: teensy3
+Only in ..\src: teensy4

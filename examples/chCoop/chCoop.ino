@@ -54,7 +54,7 @@ void chSetup() {
   if (CH_CFG_TIME_QUANTUM) {
     Serial.println("You must set CH_CFG_TIME_QUANTUM zero in");
 #if defined(__arm__)
-    Serial.print("src/arm/chconfig_arm.h");
+    Serial.print("src/<board type>/chconfig<board>.h");
 #elif defined(__AVR__)
     Serial.print(F("src/avr/chconfig_avr.h")); 
 #endif 
@@ -87,7 +87,8 @@ void loop() {
     Serial.println(maxDelay);
     count = 0;
     maxDelay = 0;
-    
+    // Enable next line to see blocking of above threads.   
+//    delay(100);
     // Allow other threads to run for 1 sec.
     chThdSleepMilliseconds(1000);
   }

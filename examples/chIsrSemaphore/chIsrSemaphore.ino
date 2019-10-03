@@ -67,18 +67,19 @@ void setup() {
 //------------------------------------------------------------------------------
 void mainThread() {
   // Setup and check pins.
-  pinMode(INPUT_PIN, INPUT);
+  pinMode(INPUT_PIN, INPUT_PULLUP);
   pinMode(OUTPUT_PIN, OUTPUT);
   
-  digitalWrite(OUTPUT_PIN, HIGH);
-  bool shouldBeTrue = digitalRead(INPUT_PIN);
-  digitalWrite(OUTPUT_PIN, LOW);
-  if (digitalRead(INPUT_PIN) || !shouldBeTrue) {
-    Serial.print("pin ");
-    Serial.print(INPUT_PIN);
-    Serial.print(" must be connected to pin ");
-    Serial.println(OUTPUT_PIN);
-    while (true) {}
+  for (int i = 0; i < 10; i++) {
+    bool level = i & 1;
+    digitalWrite(OUTPUT_PIN, level);
+    if (level != digitalRead(INPUT_PIN)) {
+      Serial.print("pin ");
+      Serial.print(INPUT_PIN);
+      Serial.print(" must be connected to pin ");
+      Serial.println(OUTPUT_PIN);
+      while (true) {}
+    }
   }   
   // Start handler task.
   chThdCreateStatic(waThd1, sizeof(waThd1), NORMALPRIO + 1, handler, NULL);

@@ -33,6 +33,15 @@ uint8_t* heapEnd() {
   return heap_end;
 }
 //------------------------------------------------------------------------------
+uint8_t* stackBase() {
+#if defined(__IMXRT1062__)
+  extern uint8_t _ebss;
+  return &_ebss;
+#else  // defined(__IMXRT1062__)
+return heapEnd();  
+#endif  // defined(__IMXRT1062__)
+}
+//------------------------------------------------------------------------------
 static size_t unusedStackByteCount(const void* bgn, const void* end) {
 #if CH_DBG_FILL_THREADS
   uint8_t* b = (uint8_t*)bgn;
@@ -42,7 +51,9 @@ static size_t unusedStackByteCount(const void* bgn, const void* end) {
   }
   return p - b;
 #else  // CH_DBG_FILL_THREADS
-return 0;
+  (void)bgn;
+  (void)end;
+  return 0;
 #endif  // CH_DBG_FILL_THREADS
 }
 //------------------------------------------------------------------------------
@@ -55,7 +66,7 @@ void chBegin(void (*mainThread)()) {
 
 #if CH_DBG_FILL_THREADS
   // start of stack
-  uint8_t* p = heapEnd();
+  uint8_t* p = stackBase();
   // Fill stack hope compiler allows this.
   while (p < (uint8_t*)(&p - 4)) {
     *p++ = CH_DBG_STACK_FILL_VALUE;
@@ -102,13 +113,13 @@ void chBegin(void (*mainThread)()) {
 size_t chUnusedHandlerStack() {
 #ifdef __arm__
   return unusedStackByteCount(processStackTop, handlerStackTop);
-#else  // __aarm_
+#else  // __arm__
   return 0;
 #endif // __arm__
 }
 //------------------------------------------------------------------------------
 size_t chUnusedMainStack() {
-  uint8_t* h = heapEnd();
+  uint8_t* h = stackBase();
   size_t n = 0;
   // Search for unused heap/stack.
   while (&h[n] < processStackTop && n < 16) {

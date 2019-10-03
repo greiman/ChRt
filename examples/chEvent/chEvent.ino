@@ -25,7 +25,7 @@ THD_FUNCTION(Thread1, arg) {
       Serial.println("Signal from Thread2");
     }
     if (m & EVENT_MASK(1)) {
-      // Tell Thread2 event was processed.      
+      // Tell Thread3 event was processed.      
       chEvtSignal(thread3, EVENT_MASK(1));
       Serial.println("Signal from Thread3");
     }

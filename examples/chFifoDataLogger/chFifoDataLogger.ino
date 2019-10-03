@@ -5,8 +5,12 @@
 #include "SD.h"
 #include "ChRt.h"
 //
-// Interval between points in units of 1024 usec on AVR, 1000 usec on ARM.
+// Interval between points in units of 1024 usec on AVR, usec on ARM.
+#if defined(__AVR__) && OSAL_ST_FREQUENCY < 1000
 const systime_t intervalTicks = 4;
+#else
+const systime_t intervalTicks = TIME_US2I(4000);
+#endif
 //------------------------------------------------------------------------------
 // SD file definitions.
 const uint8_t sdChipSelect = SS;
@@ -153,6 +157,7 @@ void loop() {
   if (overrunError) {
     Serial.println();
     Serial.println(F("** overrun errors **"));
+    Serial.println(F("Increase intervalTicks and/or FIFO_SIZE"));
   }
   while (true) {}
 }

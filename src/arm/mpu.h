@@ -1,5 +1,5 @@
 /*
-    ChibiOS - Copyright (C) 2006..2016 Giovanni Di Sirio
+    ChibiOS - Copyright (C) 2006..2018 Giovanni Di Sirio
 
     Licensed under the Apache License, Version 2.0 (the "License");
     you may not use this file except in compliance with the License.
@@ -24,6 +24,10 @@
 
 #ifndef MPU_H
 #define MPU_H
+
+/* Other layers may include another header named mpu_v7m.h which is perfectly
+   compatible, doing a check here to avoid name conflicts.*/
+#ifndef MPUV7M_H
 
 /*===========================================================================*/
 /* Driver constants.                                                         */
@@ -192,6 +196,20 @@
   MPU->RASR = ((uint32_t)attribs);                                          \
 }
 
+/**
+ * @brief   Changes an MPU region base address.
+ *
+ * @param[in] region    the region number
+ * @param[in] address   start address of the region, note, there are alignment
+ *                      constraints
+ *
+ * @api
+ */
+#define mpuSetRegionAddress(region, addr) {                                 \
+  MPU->RNR  = ((uint32_t)region);                                           \
+  MPU->RBAR = ((uint32_t)addr);                                             \
+}
+
 /*===========================================================================*/
 /* External declarations.                                                    */
 /*===========================================================================*/
@@ -202,6 +220,8 @@ extern "C" {
 #ifdef __cplusplus
 }
 #endif
+
+#endif /* MPUV7M_H */
 
 #endif /* MPU_H */
 

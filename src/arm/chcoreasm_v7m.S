@@ -1,5 +1,5 @@
 /*
-    ChibiOS - Copyright (C) 2006..2016 Giovanni Di Sirio.
+    ChibiOS - Copyright (C) 2006..2018 Giovanni Di Sirio.
 
     This file is part of ChibiOS.
 
@@ -32,16 +32,16 @@
 #if !defined(TRUE) || defined(__DOXYGEN__)
 #define TRUE    1
 #endif
-#ifdef __arm__
+#ifdef __arm__  // WHG
 #define _FROM_ASM_
-#include "cmparams.h"
-#if (CORTEX_MODEL == 0)
-/* prevent Conflicting CPU architectures error */
-  .cpu    cortex-m0
-#elif (CORTEX_MODEL == 3) || (CORTEX_MODEL == 4) || (CORTEX_MODEL == 7)
-#include "../rt/chlicense.h"
-#include "chconf_arm.h"
-#include "chcore_arm.h"
+#include "cmparams.h"  // WHG
+#if (CORTEX_MODEL == 0) // WHG
+/* prevent Conflicting CPU architectures error WHG */
+  .cpu    cortex-m0 // WHG
+#elif (CORTEX_MODEL == 3) || (CORTEX_MODEL == 4) || (CORTEX_MODEL == 7) // WHG
+#include "chlicense.h"
+#include "chconf.h"
+#include "chcore.h"
 
 #if !defined(__DOXYGEN__)
 
@@ -108,6 +108,9 @@ _port_switch:
                 .thumb_func
                 .globl  _port_thread_start
 _port_thread_start:
+#if CH_DBG_ENABLE_STACK_CHECK && PORT_ENABLE_GUARD_PAGES
+                bl      _port_set_region
+#endif
 #if CH_DBG_SYSTEM_STATE_CHECK
                 bl      _dbg_check_unlock
 #endif
@@ -166,6 +169,6 @@ _port_exit_from_isr:
 .L1:            b       .L1
 
 #endif /* !defined(__DOXYGEN__) */
-#endif  // (CORTEX_MODEL == 3) || (CORTEX_MODEL == 4) || (CORTEX_MODEL == 7)
-#endif  // __arm__
+#endif  // (CORTEX_MODEL == 3) || (CORTEX_MODEL == 4) || (CORTEX_MODEL == 7) WHG
+#endif  // __arm__ WHG
 /** @} */
