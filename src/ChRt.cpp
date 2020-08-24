@@ -36,9 +36,10 @@ uint8_t* heapEnd() {
 uint8_t* stackBase() {
 #if defined(__IMXRT1062__)
   extern uint8_t _ebss;
-  return &_ebss;
+  // Allow MPU 32 byte stack overflow detection region.
+  return &_ebss + 32;
 #else  // defined(__IMXRT1062__)
-return heapEnd();  
+  return heapEnd();  
 #endif  // defined(__IMXRT1062__)
 }
 //------------------------------------------------------------------------------
