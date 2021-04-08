@@ -15,6 +15,7 @@
 static THD_WORKING_AREA(waBlink, 64);
 
 static THD_FUNCTION(blink, arg) {
+  (void)arg;
   // blink twice per second
   pinMode(LED_BUILTIN, OUTPUT);
   uint32_t next = millis();

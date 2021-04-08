@@ -15,4 +15,5 @@
 #else 
 #error "unknown processor type"
 #endif  // __AVR__
+#include "rt/templates/chconf.h"
 #endif  // chconf_rt_h

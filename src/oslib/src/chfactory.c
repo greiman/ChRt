@@ -18,7 +18,7 @@
 */
 
 /**
- * @file    chfactory.c
+ * @file    oslib/src/chfactory.c
  * @brief   ChibiOS objects factory and registry code.
  *
  * @addtogroup oslib_objects_factory
@@ -83,6 +83,18 @@ objects_factory_t ch_factory;
 /* Module local functions.                                                   */
 /*===========================================================================*/
 
+static void copy_name(const char *sp, char *dp) {
+  unsigned i;
+  char c;
+
+  i = CH_CFG_FACTORY_MAX_NAMES_LENGTH;
+  do {
+    c = *sp++;
+    *dp++ = c;
+    i--;
+  } while ((c != (char)0) && (i > 0U));
+}
+
 static inline void dyn_list_init(dyn_list_t *dlp) {
 
   dlp->next = (dyn_element_t *)dlp;
@@ -123,7 +135,8 @@ static dyn_element_t *dyn_list_unlink(dyn_element_t *element,
 #if CH_FACTORY_REQUIRES_HEAP || defined(__DOXYGEN__)
 static dyn_element_t *dyn_create_object_heap(const char *name,
                                              dyn_list_t *dlp,
-                                             size_t size) {
+                                             size_t size,
+                                             unsigned align) {
   dyn_element_t *dep;
 
   chDbgCheck(name != NULL);
@@ -135,16 +148,13 @@ static dyn_element_t *dyn_create_object_heap(const char *name,
   }
 
   /* Allocating space for the new buffer object.*/
-  /*lint -save -e668 [] Lint is confused by the above chDbgCheck() and
-    incorrectly assumes that strncpy() could receive a NULL pointer.*/
-  dep = (dyn_element_t *)chHeapAlloc(NULL, size);
+  dep = (dyn_element_t *)chHeapAllocAligned(NULL, size, align);
   if (dep == NULL) {
     return NULL;
   }
 
   /* Initializing object list element.*/
-  strncpy(dep->name, name, CH_CFG_FACTORY_MAX_NAMES_LENGTH);
-  /*lint -restore*/
+  copy_name(name, dep->name);
   dep->refs = (ucnt_t)1;
   dep->next = dlp->next;
 
@@ -159,7 +169,6 @@ static void dyn_release_object_heap(dyn_element_t *dep,
 
   chDbgCheck(dep != NULL);
   chDbgAssert(dep->refs > (ucnt_t)0, "invalid references number");
-
 
   dep->refs--;
   if (dep->refs == (ucnt_t)0) {
@@ -190,10 +199,7 @@ static dyn_element_t *dyn_create_object_pool(const char *name,
   }
 
   /* Initializing object list element.*/
-  /*lint -save -e668 [] Lint is confused by the above chDbgCheck() and
-    incorrectly assumes that strncpy() could receive a NULL pointer.*/
-  strncpy(dep->name, name, CH_CFG_FACTORY_MAX_NAMES_LENGTH);
-  /*lint -restore*/
+  copy_name(name, dep->name);
   dep->refs = (ucnt_t)1;
   dep->next = dlp->next;
 
@@ -381,7 +387,7 @@ registered_object_t *chFactoryFindObjectByPointer(void *objp) {
  *
  * @api
  */
-void chFactoryReleaseObject(registered_object_t *rop){
+void chFactoryReleaseObject(registered_object_t *rop) {
 
   F_LOCK();
 
@@ -416,10 +422,11 @@ dyn_buffer_t *chFactoryCreateBuffer(const char *name, size_t size) {
 
   dbp = (dyn_buffer_t *)dyn_create_object_heap(name,
                                                &ch_factory.buf_list,
-                                               size);
+                                               sizeof (dyn_buffer_t) + size,
+                                               CH_HEAP_ALIGNMENT);
   if (dbp != NULL) {
     /* Initializing buffer object data.*/
-    memset((void *)dbp->buffer, 0, size);
+    memset((void *)(dbp + 1), 0, size);
   }
 
   F_UNLOCK();
@@ -577,10 +584,11 @@ dyn_mailbox_t *chFactoryCreateMailbox(const char *name, size_t n) {
   dmp = (dyn_mailbox_t *)dyn_create_object_heap(name,
                                                 &ch_factory.mbx_list,
                                                 sizeof (dyn_mailbox_t) +
-                                                (n * sizeof (msg_t)));
+                                                (n * sizeof (msg_t)),
+                                                CH_HEAP_ALIGNMENT);
   if (dmp != NULL) {
     /* Initializing mailbox object data.*/
-    chMBObjectInit(&dmp->mbx, dmp->msgbuf, n);
+    chMBObjectInit(&dmp->mbx, (msg_t *)(dmp + 1), n);
   }
 
   F_UNLOCK();
@@ -657,19 +665,29 @@ dyn_objects_fifo_t *chFactoryCreateObjectsFIFO(const char *name,
                                                size_t objsize,
                                                size_t objn,
                                                unsigned objalign) {
+  size_t size1, size2;
   dyn_objects_fifo_t *dofp;
 
   F_LOCK();
 
+  /* Enforcing alignment for the objects array.*/
+  objsize = MEM_ALIGN_NEXT(objsize, objalign);
+  size1   = MEM_ALIGN_NEXT(sizeof (dyn_objects_fifo_t) + (objn * sizeof (msg_t)),
+                           objalign);
+  size2   = objn * objsize;
+
+  /* Allocating the FIFO object with messages buffer and objects buffer.*/
   dofp = (dyn_objects_fifo_t *)dyn_create_object_heap(name,
                                                       &ch_factory.fifo_list,
-                                                      sizeof (dyn_objects_fifo_t) +
-                                                      (objn * sizeof (msg_t)) +
-                                                      (objn * objsize));
+                                                      size1 + size2,
+                                                      objalign);
   if (dofp != NULL) {
+    msg_t *msgbuf = (msg_t *)(dofp + 1);
+    uint8_t *objbuf = (uint8_t *)dofp + size1;
+
     /* Initializing mailbox object data.*/
     chFifoObjectInitAligned(&dofp->fifo, objsize, objn, objalign,
-                            (void *)&dofp->msgbuf[objn], dofp->msgbuf);
+                            (void *)objbuf, msgbuf);
   }
 
   F_UNLOCK();
@@ -748,10 +766,11 @@ dyn_pipe_t *chFactoryCreatePipe(const char *name, size_t size) {
 
   dpp = (dyn_pipe_t *)dyn_create_object_heap(name,
                                              &ch_factory.pipe_list,
-                                             sizeof (dyn_pipe_t) + size);
+                                             sizeof (dyn_pipe_t) + size,
+                                             CH_HEAP_ALIGNMENT);
   if (dpp != NULL) {
     /* Initializing mailbox object data.*/
-    chPipeObjectInit(&dpp->pipe, dpp->buffer, size);
+    chPipeObjectInit(&dpp->pipe, (uint8_t *)(dpp + 1), size);
   }
 
   F_UNLOCK();

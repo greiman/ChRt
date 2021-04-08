@@ -18,7 +18,7 @@
 */
 
 /**
- * @file    chthreads.h
+ * @file    rt/include/chthreads.h
  * @brief   Threads module macros and structures.
  *
  * @addtogroup threads
@@ -87,6 +87,7 @@ typedef struct {
 
 /**
  * @name    Threads queues
+ * @{
  */
 /**
  * @brief   Data part of a static threads queue object initializer.
@@ -95,7 +96,7 @@ typedef struct {
  *
  * @param[in] name      the name of the threads queue variable
  */
-#define _THREADS_QUEUE_DATA(name) {(thread_t *)&name, (thread_t *)&name}
+#define _THREADS_QUEUE_DATA(name) {_CH_QUEUE_DATA(name)}
 
 /**
  * @brief   Static threads queue object initializer.
@@ -104,12 +105,13 @@ typedef struct {
  *
  * @param[in] name      the name of the threads queue variable
  */
-#define _THREADS_QUEUE_DECL(name)                                           \
+#define THREADS_QUEUE_DECL(name)                                            \
   threads_queue_t name = _THREADS_QUEUE_DATA(name)
 /** @} */
 
 /**
  * @name    Working Areas
+ * @{
  */
 /**
  * @brief   Calculates the total Working Area size.
@@ -152,6 +154,7 @@ typedef struct {
 
 /**
  * @name    Threads abstraction macros
+ * @{
  */
 /**
  * @brief   Thread declaration macro.
@@ -262,13 +265,13 @@ extern "C" {
 /* Module inline functions.                                                  */
 /*===========================================================================*/
 
- /**
-  * @brief   Returns a pointer to the current @p thread_t.
-  *
-  * @return             A pointer to the current thread.
-  *
-  * @xclass
-  */
+/**
+ * @brief   Returns a pointer to the current @p thread_t.
+ *
+ * @return              A pointer to the current thread.
+ *
+ * @xclass
+ */
 static inline thread_t *chThdGetSelfX(void) {
 
   return ch.rlist.current;
@@ -284,7 +287,7 @@ static inline thread_t *chThdGetSelfX(void) {
  */
 static inline tprio_t chThdGetPriorityX(void) {
 
-  return chThdGetSelfX()->prio;
+  return chThdGetSelfX()->hdr.pqueue.prio;
 }
 
 /**
@@ -391,7 +394,7 @@ static inline void chThdSleepS(sysinterval_t ticks) {
  */
 static inline void chThdQueueObjectInit(threads_queue_t *tqp) {
 
-  queue_init(tqp);
+  ch_queue_init(&tqp->queue);
 }
 
 /**
@@ -408,7 +411,7 @@ static inline bool chThdQueueIsEmptyI(threads_queue_t *tqp) {
 
   chDbgCheckClassI();
 
-  return queue_isempty(tqp);
+  return ch_queue_isempty(&tqp->queue);
 }
 
 /**
@@ -425,9 +428,9 @@ static inline bool chThdQueueIsEmptyI(threads_queue_t *tqp) {
 static inline void chThdDoDequeueNextI(threads_queue_t *tqp, msg_t msg) {
   thread_t *tp;
 
-  chDbgAssert(queue_notempty(tqp), "empty queue");
+  chDbgAssert(ch_queue_notempty(&tqp->queue), "empty queue");
 
-  tp = queue_fifo_remove(tqp);
+  tp = (thread_t *)ch_queue_fifo_remove(&tqp->queue);
 
   chDbgAssert(tp->state == CH_STATE_QUEUED, "invalid state");
 

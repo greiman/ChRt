@@ -28,9 +28,6 @@
 #ifndef CHCORE_TIMER_H
 #define CHCORE_TIMER_H
 
-/* This is the only header in the HAL designed to be include-able alone.*/
-#include "hal_st.h"
-
 /*===========================================================================*/
 /* Module constants.                                                         */
 /*===========================================================================*/
@@ -54,6 +51,18 @@
 /*===========================================================================*/
 /* External declarations.                                                    */
 /*===========================================================================*/
+
+#ifdef __cplusplus
+extern "C" {
+#endif
+  void stStartAlarm(systime_t time);
+  void stStopAlarm(void);
+  void stSetAlarm(systime_t time);
+  systime_t stGetCounter(void);
+  systime_t stGetAlarm(void);
+#ifdef __cplusplus
+}
+#endif
 
 /*===========================================================================*/
 /* Module inline functions.                                                  */

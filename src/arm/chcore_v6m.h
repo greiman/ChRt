@@ -128,9 +128,14 @@
 
 /* Handling a GCC problem impacting ARMv6-M.*/
 #if defined(__GNUC__) && !defined(PORT_IGNORE_GCC_VERSION_CHECK)
-#if __GNUC__ > 5
-#warning "This compiler has a know problem with Cortex-M0, see bugs: 88167, 88656."
-#warning "*** Use GCC version 5 or below ***"
+#if ( __GNUC__ > 5 ) && ( __GNUC__ < 10 )
+#define GCC_VERSION ( __GNUC__ * 10000 + __GNUC_MINOR__ * 100 + __GNUC_PATCHLEVEL__ )
+#if ( __GNUC__ == 7 ) && ( GCC_VERSION >= 70500 )
+#elif ( __GNUC__ == 8 ) && ( GCC_VERSION >= 80400 )
+#elif ( __GNUC__ == 9 ) && ( GCC_VERSION >= 90300 )
+#else
+#warning "This compiler has a know problem with Cortex-M0, see GCC bugs: 88167, 88656."
+#endif
 #endif
 #endif
 
@@ -190,26 +195,30 @@
     to not have duplicated structure names into the documentation.*/
 #if !defined(__DOXYGEN__)
 struct port_extctx {
-  regarm_t      r0;
-  regarm_t      r1;
-  regarm_t      r2;
-  regarm_t      r3;
-  regarm_t      r12;
-  regarm_t      lr_thd;
-  regarm_t      pc;
-  regarm_t      xpsr;
+  uint32_t      r0;
+  uint32_t      r1;
+  uint32_t      r2;
+  uint32_t      r3;
+  uint32_t      r12;
+  uint32_t      lr_thd;
+  uint32_t      pc;
+  uint32_t      xpsr;
 };
 
 struct port_intctx {
-  regarm_t      r8;
-  regarm_t      r9;
-  regarm_t      r10;
-  regarm_t      r11;
-  regarm_t      r4;
-  regarm_t      r5;
-  regarm_t      r6;
-  regarm_t      r7;
-  regarm_t      lr;
+  uint32_t      r8;
+  uint32_t      r9;
+  uint32_t      r10;
+  uint32_t      r11;
+  uint32_t      r4;
+  uint32_t      r5;
+  uint32_t      r6;
+  uint32_t      r7;
+  uint32_t      lr;
+};
+
+struct port_context {
+  struct port_intctx    *sp;
 };
 #endif /* !defined(__DOXYGEN__) */
 
@@ -225,9 +234,9 @@ struct port_intctx {
 #define PORT_SETUP_CONTEXT(tp, wbase, wtop, pf, arg) {                      \
   (tp)->ctx.sp = (struct port_intctx *)((uint8_t *)(wtop) -                 \
                                         sizeof (struct port_intctx));       \
-  (tp)->ctx.sp->r4 = (regarm_t)(pf);                                        \
-  (tp)->ctx.sp->r5 = (regarm_t)(arg);                                       \
-  (tp)->ctx.sp->lr = (regarm_t)_port_thread_start;                          \
+  (tp)->ctx.sp->r4 = (uint32_t)(pf);                                        \
+  (tp)->ctx.sp->r5 = (uint32_t)(arg);                                       \
+  (tp)->ctx.sp->lr = (uint32_t)_port_thread_start;                          \
 }
 
 /**
@@ -256,13 +265,13 @@ struct port_intctx {
  */
 #if defined(__GNUC__) || defined(__DOXYGEN__)
 #define PORT_IRQ_PROLOGUE()                                                 \
-  regarm_t _saved_lr = (regarm_t)__builtin_return_address(0)
+  uint32_t _saved_lr = (uint32_t)__builtin_return_address(0)
 #elif defined(__ICCARM__)
 #define PORT_IRQ_PROLOGUE()                                                 \
-  regarm_t _saved_lr = (regarm_t)__get_LR()
+  uint32_t _saved_lr = (uint32_t)__get_LR()
 #elif defined(__CC_ARM)
 #define PORT_IRQ_PROLOGUE()                                                 \
-  regarm_t _saved_lr = (regarm_t)__return_address()
+  uint32_t _saved_lr = (uint32_t)__return_address()
 #endif
 
 /**
@@ -323,7 +332,8 @@ struct port_intctx {
 #ifdef __cplusplus
 extern "C" {
 #endif
-  void _port_irq_epilogue(regarm_t lr);
+  void port_init(void);
+  void _port_irq_epilogue(uint32_t lr);
   void _port_switch(thread_t *ntp, thread_t *otp);
   void _port_thread_start(void);
   void _port_switch_from_isr(void);
@@ -335,14 +345,6 @@ extern "C" {
 /*===========================================================================*/
 /* Module inline functions.                                                  */
 /*===========================================================================*/
-
-/**
- * @brief   Port-related initialization code.
- */
-static inline void port_init(void) {
-
-  NVIC_SetPriority(PendSV_IRQn, CORTEX_PRIORITY_PENDSV);
-}
 
 /**
  * @brief   Returns a word encoding the current interrupts status.

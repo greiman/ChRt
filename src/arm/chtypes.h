@@ -33,7 +33,6 @@
 #include "Arduino.h"  // WHG
 #include <stdbool.h>
 
-
 /**
  * @name    Kernel types
  * @{

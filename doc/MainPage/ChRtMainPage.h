@@ -1,7 +1,7 @@
 /**
 \mainpage ChibiOS RTOS library
 <CENTER>William Greiman</CENTER>
-<CENTER>1 Oct 2019</CENTER>
+<CENTER>8 Apr 2021</CENTER>
 
 \section Intro Introduction
 
@@ -14,13 +14,13 @@ MCAL (Microcontroller Abstraction Layer) development team based in the Arzano
 (Naples), automotive division.
 
 This package contains a version of the ChbiOS/RT RTOS for AVR Arduinos,
-SAMD Arduinos, Arduino Due, and Teensy 3.x.
+SAMD Arduinos, Arduino Due, Teensy 3.x, and Teensy 4.x.
 
-The port is based on ChibiOS 19.1.3. The ChibiOS/RT kernel is version 6.0.3.
+The port is based on ChibiOS 20.3.3. The ChibiOS/RT kernel is version 6.1.3.
 
 These systems are packaged as the Arduino library ChRt.
 
-The documentation for ChibiOS/RT 6.0.3 is located here:
+The documentation for ChibiOS/RT is located here:
 
 http://www.chibios.org/dokuwiki/doku.php?id=chibios:documentation:start
 
